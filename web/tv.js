@@ -28,10 +28,12 @@ var TV = (function () {
     // webOS 3 on a 4K set (UH6150) re-rasterized ~300 ms of tiles at each move; with each tile and pick on its own
     // compositor layer that fell to ~8 ms, and the focus can animate again (`layered` in home.css).
     document.documentElement.className += oldWebos ? ' lite layered' : ' lite';
-  } else if (samsung && navigator.deviceMemory && navigator.deviceMemory <= 2) {
+  } else if ((webos || samsung) && navigator.deviceMemory && navigator.deviceMemory <= 2) {
     // Samsungs up to 2 GB keep the animations but not the soft shadows of the parts that move (home.css): a 2021 Frame
     // (QE55LS03A, Tizen 6, 2 GB, ratio 1) froze for up to 360 ms on each move along the picks and dropped 78 frames in
-    // 8 moves along the shelf; with flat, at most 75 ms and 13 frames. Not with lite, which has no shadows or
+    // 8 moves along the shelf; with flat, at most 75 ms and 13 frames. An OLED55C1PSA (webOS 6.5.3, 2 GB, 4 cores) had
+    // the same fps drop moving the shelf's focus with the pointer, recovering once it stopped: webOS at 2 GB wasn't
+    // in this branch before, only Samsung was. Not with lite, which has no shadows or
     // animations to spare, and where the layers flat asks for would only take memory.
     document.documentElement.className += ' flat';
   }
