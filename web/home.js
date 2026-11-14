@@ -71,7 +71,7 @@
   /** Shelf apps in this order when installed, like the Android app: key, LG app id, name on the TV, brand gradient. */
   var SHELF = [
     ['netflix', /^netflix$/, /netflix/i, ['#0A0A0A', '#000000']],
-    ['youtube', /youtube/, /^youtube$/i, ['#1C1C1E', '#09090A']],
+    ['youtube', /youtube/, /^youtube$/i, ['#F2F2F2', '#E4E4E6']],
     ['prime', /^amazon$/, /prime video|amazon/i, ['#2AA8FF', '#0A68D4']],
     ['disney', /disney/, /disney/i, ['#173584', '#08143F']],
     ['max', /hbo|wbd/, /^(hbo )?max$|hbo max/i, ['#5C30E8', '#221684']],
@@ -82,11 +82,13 @@
     ['nfl', /nfl/, /^nfl/i, ['#013369', '#00163D']],
     ['globoplay', /globoplay/, /globoplay/i, ['#FF8A1F', '#FF2D5A']],
     ['jellyfin', /jellyfin/i, /jellyfin/i, ['#AA5CC3', '#00A4DC']],
-    ['spotify', /spotify/, /spotify/i, ['#1DB954', '#0F7A36']]
+    ['spotify', /spotify/, /spotify/i, ['#1DB954', '#0F7A36']],
+    ['crunchyroll', /crunchyroll/i, /crunchyroll/i, ['#F47521', '#F47521']],
+    ['stremio', /strem/i, /stremio/i, ['#0A0A0A', '#0A0A0A']]
   ];
   // Apps shown at once, as on Android: 8 (today's smallest tiles, 178 wide); the shelf scrolls for the rest. The
   // built-in list keeps 8 too.
-  var SHELF_VISIBLE = 8, FEW_APPS = 8;
+  var SHELF_VISIBLE = 9, FEW_APPS = 9;
 
   function shelfKey(app) {
     for (var i = 0; i < SHELF.length; i++) if (SHELF[i][1].test(app.id) || SHELF[i][2].test(app.title)) return SHELF[i];
@@ -581,7 +583,7 @@
   var shelfFirst = 0, tileStep = 0, tileLeft = 0;
 
   function renderShelf() {
-    var n = Math.min(shelf.length, SHELF_VISIBLE), gap = 48, pad = 40;
+    var n = Math.min(shelf.length, SHELF_VISIBLE), gap = n > 8 ? 30 : 48, pad = 40;
     // 16:9 tiles, as on Android: never taller than 126, and the glass keeps its bottom edge.
     var tw = Math.min(126 * 16 / 9, (1760 - Math.max(0, n - 1) * gap) / Math.max(1, n)), th = tw * 9 / 16;
     var width = n * tw + Math.max(0, n - 1) * gap, left = (1920 - width) / 2;
@@ -686,12 +688,24 @@
     for (var o = 0; o < old.length; o++) d.removeChild(old[o]);
     var wx = Prefs.weather(), coins = Data.activeCoins(), qt = coins.length > 0;
     var split = 80 + 1760 * 0.585;
+    // Without prices, the second card is the TV's performance (frames per second, memory, elements, hardware).
+    var showPerf = !qt;
+    perfEls = null;
     if (wx) {
       var w = el('div', 'panel glass', d);
       w.id = 'weather';
       w.style.left = '80px';
-      w.style.width = ((qt ? split - 16 : 1840) - 80) + 'px';
+      // A smaller card (880 wide) when something sits beside it; the whole row when it is alone.
+      w.style.width = (qt ? split - 16 - 80 : showPerf ? 880 : 1760) + 'px';
       renderWeather(w);
+    }
+    if (showPerf) {
+      var pf = el('div', 'panel glass', d);
+      pf.id = 'perf';
+      var pl = wx ? 80 + 880 + 24 : 80;
+      pf.style.left = pl + 'px';
+      pf.style.width = (1840 - pl) + 'px';
+      renderPerf(pf);
     }
     if (qt) {
       var q = el('div', 'panel glass', d);
@@ -774,6 +788,79 @@
     if (Prefs.weather() && Data.weather && weatherParts(Data.weather).join(' · ') !== extraKey) renderPanels();
   }, 60000);
 
+  // MARK: - Performance card (the drawer's second card): live frames per second while the drawer is open
+
+  var perfEls = null, perfModel = '', perfFrames = 0, perfSince = 0, perfFps = 0, perfRunning = false;
+
+  function oneDecimal(n) {
+    try { return n.toLocaleString(I18N.lang, {minimumFractionDigits: 1, maximumFractionDigits: 1}); } catch (e) { return n.toFixed(1); }
+  }
+
+  function renderPerf(card) {
+    perfEls = {};
+    el('div', 'head', card, tr('Performance'));
+    perfEls.model = el('div', 'side', card, perfModel);
+    var big = el('div', 'fps', card);
+    perfEls.fps = el('span', 'n', big, perfFps ? String(perfFps) : '--');
+    el('span', 'u', big, 'FPS');
+    el('div', 'what', card, tr('Frames per second'));
+    var track = el('div', 'track', card);
+    perfEls.bar = el('div', 'fill', track);
+    el('div', 'cap', card, trf('{n} is the screen maximum', {n: 60}));
+    el('div', 'split', card);
+    var rows = [['mem', tr('App memory')], ['els', tr('Elements on screen')], ['hw', tr('Hardware')]];
+    for (var i = 0; i < rows.length; i++) {
+      var r = el('div', 'row', card);
+      r.style.top = (84 + 62 * i) + 'px';
+      el('span', 'k', r, rows[i][1]);
+      perfEls[rows[i][0]] = el('span', 'v', r);
+    }
+    updatePerf();
+  }
+
+  function updatePerf() {
+    if (!perfEls || !perfEls.fps.parentNode) return;
+    perfEls.fps.textContent = perfFps ? String(perfFps) : '--';
+    perfEls.bar.style.width = Math.max(0, Math.min(100, perfFps / 60 * 100)) + '%';
+    setClass(perfEls.bar, 'low', perfFps > 0 && perfFps < 45);
+    var mem = window.performance && window.performance.memory ? window.performance.memory.usedJSHeapSize : 0;
+    perfEls.mem.textContent = mem ? oneDecimal(mem / 1048576) + ' MB' : '--';
+    perfEls.els.textContent = String(document.getElementsByTagName('*').length);
+    var parts = [], cores = navigator.hardwareConcurrency;
+    if (cores) parts.push(trf('{n} cores', {n: cores}));
+    if (navigator.deviceMemory) parts.push('~' + navigator.deviceMemory + ' GB');
+    perfEls.hw.textContent = parts.join(' · ') || '--';
+  }
+
+  function perfTick() {
+    if (!perfRunning) return;
+    perfFrames++;
+    var now = Date.now();
+    if (now - perfSince >= 500) {
+      perfFps = Math.round(perfFrames * 1000 / (now - perfSince));
+      perfFrames = 0;
+      perfSince = now;
+      updatePerf();
+    }
+    requestAnimationFrame(perfTick);
+  }
+
+  function startPerf() {
+    if (perfRunning || !perfEls) return;
+    perfRunning = true;
+    perfFrames = 0;
+    perfSince = Date.now();
+    if (!perfModel) {
+      TV.about(function (info) {
+        perfModel = (info && info.model) || '';
+        if (perfEls && perfEls.model.parentNode) perfEls.model.textContent = perfModel;
+      });
+    }
+    requestAnimationFrame(perfTick);
+  }
+
+  function stopPerf() { perfRunning = false; }
+
   function renderPrices(card, coins) {
     el('div', 'head', card, tr('Crypto'));
     var stale = Data.staleness(Data.pricesAt, 5 * 60000);
@@ -795,11 +882,13 @@
     st.zone = Z.DRAWER;
     st.drawer = Math.min(drawerItems.length - 1, nearest(document.querySelectorAll('#drawer .key'), centerX(tiles[st.shelf])));
     updateFocus();
+    startPerf();
   }
 
   function closeDrawer() {
     var keys = document.querySelectorAll('#drawer .key');
     st.zone = Z.SHELF;
+    stopPerf();
     if (shelf.length) st.shelf = nearest($('tiles').children, centerX(keys[st.drawer]));
     updateFocus();
   }

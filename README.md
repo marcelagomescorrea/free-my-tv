@@ -135,6 +135,8 @@ python3 webos/apps.py 192.168.1.50 && python3 webos/build.py && python3 webos/in
 
 Developer Mode lasts about 40 days: open the Developer Mode app now and then and press **EXTEND**, or let your computer do it with `python3 webos/renew.py 192.168.1.50` (it needs the TV on and reachable, and the key `install.py` already saved). Run that on a schedule and you never touch EXTEND again — weekly is plenty; `webos/renew.py` shows a cron line for macOS and Linux and a Task Scheduler one for Windows. To remove Free My TV, run `python3 webos/install.py 192.168.1.50 --uninstall`.
 
+On a **rooted** LG TV (unrelated to the steps above — your own setup, at your own risk), [`webos/root-autostart.md`](webos/root-autostart.md) documents a small script that opens Free My TV on its own, on every real reboot and every time the TV wakes from standby.
+
 ## Samsung TVs (Tizen)
 
 The same home screen as a Samsung app, with everything the LG one has: the picks, the shelf, the drawer with the inputs, the weather and the prices, day and night, and its own settings. It installs through Samsung's own Developer Mode, with nothing rooted or changed on the TV, and Samsung's home screen stays where it is.

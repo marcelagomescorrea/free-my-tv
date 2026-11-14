@@ -174,7 +174,7 @@ var TV = (function () {
   // MU6100 (Tizen 3) no iconPath loads at all, so common apps get a logo here: Simple Icons' (CC0), cropped and tinted
   // for the tiles, with a width and height so old WebKit sizes them like PNGs.
   var SAMSUNG_ICONS = {
-    '9Ur5IzDKqV.TizenYouTube': 'icons/youtube.png',
+    '9Ur5IzDKqV.TizenYouTube': 'icons/youtube_2.png',
     'evKhCgZelL.AmazonIgnitionLauncher2': 'icons/prime.png',
     'org.tizen.primevideo': 'icons/prime.png',
     'RN1MCdNq8t.Netflix': 'icons/netflix.svg',
@@ -194,13 +194,18 @@ var TV = (function () {
   // The same logos by name (lowercase letters and digits only), for app ids the list above doesn't know: older TVs
   // (a 2016 KU6300, Tizen 2.4) can carry other ids for the same apps.
   var SAMSUNG_ICON_NAMES = {
-    youtube: 'icons/youtube.png', primevideo: 'icons/prime.png', amazonprimevideo: 'icons/prime.png',
+    youtube: 'icons/youtube_2.png', primevideo: 'icons/prime.png', amazonprimevideo: 'icons/prime.png',
     netflix: 'icons/netflix.svg', max: 'icons/max.svg', spotify: 'icons/spotify.svg',
     deezer: 'icons/deezer.svg', youtubekids: 'icons/youtubekids.svg', redbulltv: 'icons/redbull.svg', ted: 'icons/ted.svg',
     steamlink: 'icons/steam.svg', jellyfin: 'icons/jellyfin.svg', paramount: 'icons/paramountplus.svg',
-    paramountplus: 'icons/paramountplus.svg', crunchyroll: 'icons/crunchyroll.svg', twitch: 'icons/twitch.svg',
+    paramountplus: 'icons/paramountplus.svg', crunchyroll: 'icons/crunchyroll_3.png', stremio: 'icons/stremio_2.png', twitch: 'icons/twitch.svg',
     plex: 'icons/plex.svg', appletv: 'icons/appletv.svg'
   };
+
+  // The same table, for LG: listLaunchPoints hands back an iconPath too, but it isn't always reachable (an
+  // OLED55C1PSA's own Crunchyroll icon never loaded, falling back to its name on a plain color) -- our own logo
+  // wins over the TV's for the apps we have one for, the same policy as Samsung above.
+  var LG_ICON_NAMES = SAMSUNG_ICON_NAMES;
 
   // Names Smart Hub gets wrong: HBO's app has none (so it never reached the shelf), others are long or old.
   var SAMSUNG_TITLES = {
@@ -228,7 +233,7 @@ var TV = (function () {
   // one app id: these are checked one by one there. Their icons can't be read, so they get our logo where web/icons
   // has one, as on Samsung, and otherwise their name on the brand's color: [id, title, logo, color].
   var KNOWN = [
-    ['netflix', 'Netflix', 'icons/netflix.svg'], ['youtube.leanback.v4', 'YouTube', 'icons/youtube.png'],
+    ['netflix', 'Netflix', 'icons/netflix.svg'], ['youtube.leanback.v4', 'YouTube', 'icons/youtube_2.png'],
     ['amazon', 'Prime Video', 'icons/prime.png'], ['com.disney.disneyplus-prod', 'Disney+'],
     ['com.wbd.stream', 'HBO Max', 'icons/max.svg'], ['com.hbo.hbomax', 'Max', 'icons/max.svg'],
     ['com.apple.appletv', 'Apple TV'], ['hulu', 'Hulu'], ['com.peacock.tv', 'Peacock'], ['com.nfl.app', 'NFL'],
@@ -533,7 +538,10 @@ var TV = (function () {
         for (var i = 0; i < points.length; i++) {
           var p = points[i];
           if (!p.id || p.id === self || HIDDEN.test(p.id)) continue;
-          out.push({id: p.id, title: p.title || p.id, icon: p.largeIcon || p.icon || '', color: p.bgColor || p.iconColor || ''});
+          var title = p.title || p.id;
+          var key = String(title).toLowerCase().replace(/[^a-z0-9]/g, '');
+          var byName = Object.prototype.hasOwnProperty.call(LG_ICON_NAMES, key) ? LG_ICON_NAMES[key] : '';
+          out.push({id: p.id, title: title, icon: byName || p.largeIcon || p.icon || '', color: p.bgColor || p.iconColor || ''});
         }
         return out;
       }
