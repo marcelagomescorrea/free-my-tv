@@ -45,7 +45,7 @@ Tudo abaixo é específico deste fork e desta TV; nada disso é comportamento do
   renderização sem sombras ("flat") que TVs Samsung com essa memória já tinham — sem isso, a prateleira visivelmente
   perdia quadros ao mover o cursor por ela.
 - **A configuração desta TV** (`config.properties`, não versionado): ordem dos apps na prateleira, cidade e chave do
-  TMDB.
+  TMDB. Veja [`config-properties.md`](config-properties.md) para o que cada opção desse arquivo faz.
 
 Além disso, esta TV está **com root** (por conta e risco do próprio dono, sem relação com o Free My TV em si) para
 algumas personalizações a mais, cada uma documentada em seu próprio arquivo:
