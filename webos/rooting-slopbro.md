@@ -41,10 +41,12 @@ if you already ran it with Developer Mode still on), then reboot.
 ## 4. After rebooting: confirm it worked
 
 **Homebrew Channel** should now be in the TV's app list. Open it once — this is also how you turn on Telnet or SSH
-(in its own Settings), which the other two docs' commands need. The default root password over SSH is `alpine`; **Telnet
-has no password at all**, so turn it off again once you're done with it for the session, and prefer SSH with your
-own key for anything longer-term. See `webosbrew.org`'s own docs for exactly where those toggles are in Homebrew
-Channel's settings screen, since the exact wording has changed between its versions.
+(in its own Settings), which the other two docs' commands need. **Telnet has no password at all** (confirmed on this
+TV: it just drops you into a root shell) — turn it off again once you're done with it for the session. SSH is said
+by the Homebrew Channel community to default to the root password `alpine` unless you've added your own key to
+`/home/root/.ssh/authorized_keys`, but this project never actually used SSH on this TV (only Telnet), so take that
+one detail as secondhand, not something verified here. See `webosbrew.org`'s own docs for exactly where those
+toggles are in Homebrew Channel's settings screen, since the exact wording has changed between its versions.
 
 ## Caveats
 
