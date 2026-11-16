@@ -75,6 +75,9 @@ own source): `home`, `back`, `ok`, `up`/`down`/`left`/`right`, `red`/`green`/`ye
 `guide`, `info`, `settings`, `search`, `voice`, the service app buttons (`netflix`, `prime`, `disney`, `alexa`,
 `lg_channels`, …) and a few more — `grep -n '": "' magic_mapper.py` near its `KEYCODE_MAP` lists them all.
 
+When this is in place and working, see `rooting-slopbro.md`'s note on turning Telnet/SSH back off — Magic Mapper
+runs entirely on its own from here, and doesn't need either to stay on.
+
 ## Caveats
 
 - **`exclusive_mode: true`** (the default, kept here) means Magic Mapper's own process has to be the one re-sending

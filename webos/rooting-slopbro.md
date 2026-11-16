@@ -48,6 +48,15 @@ by the Homebrew Channel community to default to the root password `alpine` unles
 one detail as secondhand, not something verified here. See `webosbrew.org`'s own docs for exactly where those
 toggles are in Homebrew Channel's settings screen, since the exact wording has changed between its versions.
 
+## When you're done setting everything up: turn Telnet and SSH back off
+
+Once `root-autostart.md` and `magic-mapper-buttons.md` (or anything else) are in place and working, go back into
+**Homebrew Channel → Settings** and switch **Telnet** and **SSH** both off. Neither needs to stay on: the autostart
+script and Magic Mapper are already saved on the TV's own disk and keep running (and restarting themselves) on
+their own — they don't call back out to anything, and don't need an open door into the TV to keep working. Telnet
+in particular has no password at all, so anyone else on the same Wi-Fi could get a root shell on the TV while it's
+left on. Turn one back on only for the next time you actually need to change something over it.
+
 ## Caveats
 
 - Don't reinstall LG's own **Developer Mode** app once rooted — the two don't coexist cleanly (see step 3).

@@ -125,6 +125,9 @@ ps -ef | grep getPowerState                            # the background watcher,
 luna-send -n 1 -a com.webos.service.applicationmanager luna://com.webos.applicationManager/getForegroundAppInfo '{}'
 ```
 
+When this is in place and working, see `rooting-slopbro.md`'s note on turning Telnet/SSH back off — this script
+doesn't need either to stay on to keep running.
+
 ## Caveats
 
 - **Don't touch** `/media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/jumpstart.sh` or
