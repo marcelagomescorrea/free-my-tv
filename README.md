@@ -1,37 +1,40 @@
 <div align="center">
 
-# Free My TV — this fork
+# Free My TV — este fork
 
-A personal fork of **[simbasjungles/free-my-tv](https://github.com/simbasjungles/free-my-tv)**, customized for one
-LG webOS TV (an LG OLED55C1PSA). For what the project itself is, how to install it, and everything else about it,
-see [the original repository](https://github.com/simbasjungles/free-my-tv) and its own README — this fork changes
-none of that.
+Um fork pessoal do **[simbasjungles/free-my-tv](https://github.com/simbasjungles/free-my-tv)**, personalizado para uma
+TV LG webOS (uma LG OLED55C1PSA). Para saber o que o projeto em si é, como instalar, e tudo o mais sobre ele, veja
+[o repositório original](https://github.com/simbasjungles/free-my-tv) e seu próprio README — este fork não muda nada
+disso.
+
+![A prateleira do Free My TV nesta TV, com os ícones personalizados](.github/preview-webos.png)
 
 </div>
 
-## What's different here
+## O que é diferente aqui
 
-Everything below is specific to this fork and this TV; none of it is upstream behavior.
+Tudo abaixo é específico deste fork e desta TV; nada disso é comportamento do projeto original.
 
-- **The shelf's icons** for a few apps (Netflix, YouTube, Crunchyroll, Stremio) were replaced or added, since the
-  TV's own reported icon for some of them didn't load. See [`web/icons/SOURCES.md`](web/icons/SOURCES.md) for where
-  each one came from and why.
-- **A performance fix** (`web/tv.js`): LG TVs reporting 2 GB of memory now get the same shadow-free "flat" rendering
-  mode Samsung TVs at that memory already had — the shelf visibly dropped frames moving the pointer across it
-  without this.
-- **This TV's own setup** (`config.properties`, not committed): shelf app order, city, and TMDB key.
+- **Os ícones da prateleira** de alguns apps (Netflix, YouTube, Crunchyroll, Stremio) foram substituídos ou
+  adicionados, já que o ícone que a própria TV informava para alguns deles não carregava. Veja
+  [`web/icons/SOURCES.md`](web/icons/SOURCES.md) para saber de onde cada um veio e por quê.
+- **Uma correção de performance** (`web/tv.js`): TVs LG que informam 2 GB de memória agora recebem o mesmo modo de
+  renderização sem sombras ("flat") que TVs Samsung com essa memória já tinham — sem isso, a prateleira visivelmente
+  perdia quadros ao mover o cursor por ela.
+- **A configuração desta TV** (`config.properties`, não versionado): ordem dos apps na prateleira, cidade e chave do
+  TMDB.
 
-On top of that, this TV is **rooted** (at the owner's own risk, unrelated to Free My TV itself) for a few further
-customizations, each documented in its own file:
+Além disso, esta TV está **com root** (por conta e risco do próprio dono, sem relação com o Free My TV em si) para
+algumas personalizações a mais, cada uma documentada em seu próprio arquivo:
 
-- [`webos/rooting-slopbro.md`](webos/rooting-slopbro.md) — rooting the TV in the first place, with
+- [`webos/rooting-slopbro.md`](webos/rooting-slopbro.md) — como fazer root na TV, com
   [SlopBro](https://github.com/throwaway96/slopbro).
-- [`webos/root-autostart.md`](webos/root-autostart.md) — a script that opens Free My TV on its own, on every real
-  reboot and every time the TV wakes from standby.
-- [`webos/magic-mapper-buttons.md`](webos/magic-mapper-buttons.md) — remapping the remote's **Home** button to open
-  Free My TV directly, with the **red** button as a backup to LG's own launcher, using
+- [`webos/root-autostart.md`](webos/root-autostart.md) — um script que abre o Free My TV sozinho, em todo reboot de
+  verdade e toda vez que a TV acorda do modo de espera.
+- [`webos/magic-mapper-buttons.md`](webos/magic-mapper-buttons.md) — remapear o botão **Home** do controle para abrir
+  o Free My TV diretamente, com o botão **vermelho** como reserva para o launcher da própria LG, usando o
   [andrewfraley/magic_mapper](https://github.com/andrewfraley/magic_mapper).
 
-## License
+## Licença
 
-MIT, same as upstream — see [`LICENSE`](LICENSE).
+MIT, igual ao projeto original — veja [`LICENSE`](LICENSE).
