@@ -22,7 +22,8 @@ documenta isso com mais detalhe, e também para outras TVs (Android TV/Google TV
    mostrar o próprio IP e uma senha de uso único.
 2. **Configuração** (`config.properties`, criado por `python3 webos/build.py` na primeira vez): preenchemos
    `latitude`/`longitude` e `city` (Brasília, no nosso caso) e colamos nossa própria chave do TMDB (grátis, em
-   themoviedb.org) em `tmdb_key`.
+   themoviedb.org) em `tmdb_key`. Veja [`config-properties.md`](config-properties.md) para o que cada opção desse
+   arquivo faz.
 3. **Build**: `python3 webos/build.py`, que deve terminar em `Built FreeMyTV-webos.ipk`.
 4. **Instalar**: `python3 webos/install.py <IP da TV>`. Na primeira vez ele pede a senha que a TV mostrou no passo 1;
    depois disso guarda uma chave SSH própria para essa TV, e as próximas atualizações não pedem senha de novo.
