@@ -1,43 +1,45 @@
-# Opening Free My TV on its own (rooted LG TVs)
+# Fazendo o Free My TV abrir sozinho (TVs LG com root)
 
-This is an optional, TV-side setup for people who have **rooted their LG TV** (for example with
-[SlopBro](https://github.com/throwaway96/slopbro), which installs the
-[webOS Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel)). It is not part of the app, is not
-built or installed by `webos/build.py` or `webos/install.py`, and has nothing to do with the project's own code —
-it's a small shell script placed directly on the TV's root filesystem, using a mechanism the Homebrew Channel itself
-provides. It's documented here only so the setup survives being forgotten, and so another rooted LG TV can repeat
-it.
+Essa é uma configuração opcional, do lado da TV, para quem **fez root na própria TV LG** (por exemplo com o
+[SlopBro](https://github.com/throwaway96/slopbro), que instala o
+[webOS Homebrew Channel](https://github.com/webosbrew/webos-homebrew-channel)). Não faz parte do app, não é
+construído nem instalado pelo `webos/build.py` ou `webos/install.py`, e não tem nada a ver com o código do próprio
+projeto — é um pequeno script shell colocado direto no sistema de arquivos root da TV, usando um mecanismo que o
+próprio Homebrew Channel já oferece. Está documentado aqui só para a configuração sobreviver mesmo que seja
+esquecida, e para que outra TV LG com root possa repetir o mesmo processo.
 
-**Rooting a TV is your own decision and your own risk**, unrelated to this project; see the Homebrew Channel's own
-docs and [cani.rootmy.tv](https://cani.rootmy.tv) for whether your model and firmware can be rooted at all.
+**Fazer root numa TV é decisão e risco seus**, sem relação com este projeto; veja a documentação do próprio Homebrew
+Channel e o [cani.rootmy.tv](https://cani.rootmy.tv) para saber se seu modelo e firmware podem ser rooteados.
 
-## What it does
+## O que faz
 
-With this script in place, the TV opens straight into Free My TV:
+Com esse script no lugar, a TV abre direto no Free My TV:
 
-- **On every real reboot** (a software update, a crash, or *Settings → General → Reboot*).
-- **On waking from standby** (turning the TV off and back on with the remote) — this is the common, everyday case.
-  webOS never reboots the TV for this, so a plain boot-time script (the obvious approach) never even runs here.
+- **Em todo reboot de verdade** (uma atualização de software, uma travada, ou *Settings → General → Reboot*).
+- **Ao acordar do modo de espera** (desligar e ligar a TV de novo pelo controle) — esse é o caso comum, do dia a dia.
+  O webOS nunca reinicia a TV nesse caso, então um script que só roda na inicialização (a abordagem óbvia) nem chega
+  a rodar aqui.
 
-Both cases hit the same underlying race: for a while after the screen comes back (whether from a real boot or from
-standby), the TV's own firmware keeps putting **Live TV** in front, even after Free My TV has already been launched
-once. The script below keeps relaunching Free My TV — but only while something else still has the foreground, so it
-never fights Free My TV once it has actually won, which is what caused the shelf to flicker in an earlier version of
-this script (every relaunch call resets the page's focus).
+Os dois casos batem na mesma disputa de fundo: por um tempo depois que a tela volta (seja de um boot de verdade ou do
+modo de espera), o próprio firmware da TV insiste em colocar a **Live TV** na frente, mesmo depois do Free My TV já
+ter sido aberto uma vez. O script abaixo continua reabrindo o Free My TV — mas só enquanto outra coisa ainda está em
+primeiro plano, então ele nunca briga com o Free My TV depois que ele já venceu de verdade, que foi o que causava a
+prateleira piscar numa versão anterior deste script (cada chamada de reabertura reseta o foco da página).
 
-## The script
+## O script
 
-Lives at `/var/lib/webosbrew/init.d/freemytv-autostart` on the TV (not in this repository — nothing here builds or
-installs it). The Homebrew Channel's own startup script runs every executable file in that directory once, early at
-every real boot (see its `startup.sh`'s `run-parts /var/lib/webosbrew/init.d`), which is the hook this relies on.
+Fica em `/var/lib/webosbrew/init.d/freemytv-autostart` na TV (não está neste repositório — nada aqui constrói ou
+instala ele). O próprio script de inicialização do Homebrew Channel roda todo arquivo executável dessa pasta uma vez,
+bem no início de todo boot de verdade (veja o `run-parts /var/lib/webosbrew/init.d` no `startup.sh` dele), que é o
+gancho do qual isso depende.
 
 ```sh
 #!/bin/sh
 LOG=/tmp/freemytv-autostart.log
 
-# Makes sure Free My TV is the foreground app, retrying every 3s for up to 2
-# minutes. Does nothing (no flicker) once it already holds the foreground, and
-# stops as soon as it does.
+# Garante que o Free My TV é o app em primeiro plano, tentando de novo a cada
+# 3s por até 2 minutos. Não faz nada (sem piscar) se ele já está em primeiro
+# plano, e para assim que isso acontece.
 ensure_foreground() {
   i=0
   while [ "$i" -lt 40 ]; do
@@ -55,20 +57,21 @@ ensure_foreground() {
   done
 }
 
-# Fixes the race right after boot: the TV shows Live TV for a while even after
-# our first launch succeeds.
+# Corrige a disputa logo depois do boot: a TV mostra a Live TV por um tempo
+# mesmo depois da nossa primeira chamada já ter funcionado.
 ensure_foreground
 
-# Waking from standby (turning the TV off/on with the remote) never reboots it,
-# so this script doesn't run again then -- yet the TV shows Live TV there too.
-# This watches the TV's power state for the rest of this boot session and
-# re-runs the same fix every time it wakes back up to "Active".
+# Acordar do modo de espera (desligar/ligar a TV pelo controle) nunca a
+# reinicia, então este script não roda de novo nesse caso -- mas a TV mostra a
+# Live TV ali também. Isso observa o estado de energia da TV pelo resto dessa
+# sessão de boot e roda a mesma correção de novo toda vez que ela volta a
+# "Active".
 (
   prevstate="unknown"
   luna-send -i luna://com.webos.service.tvpower/power/getPowerState '{"subscribe":true}' 2>/dev/null | while IFS= read -r line; do
     case "$line" in
       *processing*)
-        : # mid-transition; ignore
+        : # meio da transição; ignora
       ;;
       *'"state":"Active"'*|*'"state": "Active"'*)
         if [ "$prevstate" = "Suspend" ]; then
@@ -87,55 +90,58 @@ ensure_foreground
 exit 0
 ```
 
-The background part (the last `( ... ) &`) is what covers the standby case: it stays subscribed to
-`com.webos.service.tvpower`'s power state for as long as the TV stays on this boot, and only acts on the clean,
-settled `{"state":"Active"}` / `{"state":"Suspend"}` lines (not the many in-between `"processing"` ones a real
-power-cycle also sends).
+A parte em segundo plano (o último `( ... ) &`) é o que cobre o caso do modo de espera: ela continua inscrita no
+estado de energia do `com.webos.service.tvpower` por todo o tempo que a TV ficar ligada nesse boot, e só age nas
+linhas já estabilizadas, `{"state":"Active"}` / `{"state":"Suspend"}` (não nas várias `"processing"` do meio do
+caminho que um ciclo de energia de verdade também manda).
 
-## Installing it
+## Instalando
 
-With the Homebrew Channel's SSH or Telnet enabled (its own *Settings*), from a computer on the same network:
+Com o SSH ou o Telnet do Homebrew Channel ligado (nas próprias *Settings* dele), a partir de um computador na mesma
+rede:
 
 ```bash
-ssh root@<TV IP>          # or: telnet <TV IP>  (Homebrew Channel's default: no password over Telnet)
+ssh root@<IP da TV>          # ou: telnet <IP da TV>  (padrão do Homebrew Channel: sem senha no Telnet)
 ```
 
-Then on the TV, write the script above to `/var/lib/webosbrew/init.d/freemytv-autostart` and make it executable:
+Então, na TV, escreva o script acima em `/var/lib/webosbrew/init.d/freemytv-autostart` e torne-o executável:
 
 ```sh
 cat > /var/lib/webosbrew/init.d/freemytv-autostart << 'SCRIPTEOF'
-# ...the script above...
+# ...o script acima...
 SCRIPTEOF
 chmod +x /var/lib/webosbrew/init.d/freemytv-autostart
 ```
 
-It takes effect on the next real reboot (`luna-send -n 1 -a com.webos.service.sleep luna://com.webos.service.sleep/shutdown/machineReboot '{"reason":"remoteKey"}'`, or *Settings → General → Reboot*). To also protect the TV's *current*
-running session without rebooting it, launch just the background watcher block (the `( ... ) &` part) by hand over
-the same SSH/Telnet session, with `nohup` so it survives the session closing:
+Passa a valer no próximo reboot de verdade
+(`luna-send -n 1 -a com.webos.service.sleep luna://com.webos.service.sleep/shutdown/machineReboot '{"reason":"remoteKey"}'`,
+ou *Settings → General → Reboot*). Para também proteger a sessão *atual* da TV sem reiniciá-la, rode só o bloco do
+observador em segundo plano (a parte `( ... ) &`) na mão, pela mesma sessão SSH/Telnet, com `nohup` para sobreviver
+ao fechamento da sessão:
 
 ```sh
-nohup sh -c '... the ( ... ) block's body, unindented ...' >> /tmp/freemytv-autostart.log 2>&1 < /dev/null &
+nohup sh -c '... o corpo do bloco ( ... ), sem a indentação ...' >> /tmp/freemytv-autostart.log 2>&1 < /dev/null &
 ```
 
-## Checking it
+## Conferindo
 
 ```sh
-cat /tmp/freemytv-autostart.log                       # every attempt and every standby wake, timestamped
-ps -ef | grep getPowerState                            # the background watcher, if it's running
+cat /tmp/freemytv-autostart.log                       # toda tentativa e todo acordar do modo de espera, com hora
+ps -ef | grep getPowerState                            # o observador em segundo plano, se estiver rodando
 luna-send -n 1 -a com.webos.service.applicationmanager luna://com.webos.applicationManager/getForegroundAppInfo '{}'
 ```
 
-When this is in place and working, see `rooting-slopbro.md`'s note on turning Telnet/SSH back off — this script
-doesn't need either to stay on to keep running.
+Quando isso estiver no lugar e funcionando, veja a nota do `rooting-slopbro.md` sobre desligar o Telnet/SSH de novo —
+este script não precisa de nenhum dos dois ligado para continuar funcionando.
 
-## Caveats
+## Ressalvas
 
-- **Don't touch** `/media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/jumpstart.sh` or
-  `/var/lib/webosbrew/startup.sh` — only add scripts under `init.d/`, as the Homebrew Channel's own warning in
-  `jumpstart.sh` says.
-- An LG software update, a factory reset, or re-running the root exploit from scratch removes this (and the root
-  itself) — reinstall the script the same way afterward.
-- This fights Live TV only for a short window after boot/wake (2 minutes for the boot-time loop; the standby watcher
-  reacts within a few seconds of waking). If you deliberately switch to Live TV yourself during that window, nothing
-  stops you — the loop only keeps relaunching Free My TV while something *else* already holds the foreground, never
-  the other way around.
+- **Não mexa** em `/media/developer/apps/usr/palm/services/org.webosbrew.hbchannel.service/jumpstart.sh` nem em
+  `/var/lib/webosbrew/startup.sh` — só adicione scripts dentro de `init.d/`, como o próprio aviso do Homebrew Channel
+  no `jumpstart.sh` diz.
+- Uma atualização de software da LG, um reset de fábrica, ou rodar o exploit de root de novo do zero remove isso (e o
+  root junto) — reinstale o script do mesmo jeito depois.
+- Isso só briga com a Live TV numa janela curta depois do boot/acordar (2 minutos para o loop de inicialização; o
+  observador do modo de espera reage dentro de poucos segundos de ter acordado). Se você mesmo trocar
+  deliberadamente para a Live TV durante essa janela, nada te impede — o loop só continua reabrindo o Free My TV
+  enquanto *outra coisa* já está em primeiro plano, nunca o contrário.

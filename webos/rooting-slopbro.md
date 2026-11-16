@@ -1,23 +1,24 @@
-# Rooting an LG TV with SlopBro (before any of the other `webos/*-*.md` docs apply)
+# Fazendo root numa TV LG com o SlopBro (antes dos outros docs `webos/*-*.md`)
 
-This is the step before [`root-autostart.md`](root-autostart.md) and [`magic-mapper-buttons.md`](magic-mapper-buttons.md):
-both assume the TV is already rooted with the Homebrew Channel installed. None of this is part of Free My TV itself
-— it's a third-party exploit, used entirely at your own risk, on your own TV. Read
-[webosbrew.org](https://webosbrew.org)'s own rooting guidance too before doing this on a TV that matters to you.
+Esse é o passo anterior a [`root-autostart.md`](root-autostart.md) e
+[`magic-mapper-buttons.md`](magic-mapper-buttons.md): os dois assumem que a TV já está com root e com o Homebrew
+Channel instalado. Nada disso faz parte do Free My TV em si — é um exploit de terceiros, usado por sua conta e risco,
+na sua própria TV. Leia também as orientações de root do próprio
+[webosbrew.org](https://webosbrew.org) antes de fazer isso numa TV que importa para você.
 
-## 1. Check the TV is actually exploitable
+## 1. Confira se a TV é de fato explorável
 
-Go to **[cani.rootmy.tv](https://cani.rootmy.tv)** and enter the TV's exact model number and firmware version (on
-the TV: Settings → General → System → About This TV, or About → check for updates). It lists every known exploit
-for every webOS model/firmware combination, each marked patched or not. SlopBro is the one documented here; if the
-checker shows it (or any exploit) as not patched for your exact version, you're good. If every exploit shows
-patched, there's no way in at that firmware — don't try. A software update can patch it, so check the current
-firmware, not an older remembered one.
+Vá em **[cani.rootmy.tv](https://cani.rootmy.tv)** e digite o modelo exato da TV e a versão do firmware (na TV:
+Settings → General → System → About This TV, ou About → check for updates). O site lista todo exploit conhecido para
+cada combinação de modelo/firmware do webOS, marcado como corrigido ou não. O SlopBro é o documentado aqui; se o
+checador mostrar ele (ou qualquer outro exploit) como não corrigido na sua versão exata, está valendo. Se todos
+aparecerem corrigidos, não há como entrar nesse firmware — não tente. Uma atualização de software pode corrigir o
+exploit, então confira o firmware atual, não um que você lembra de uma versão antiga.
 
-## 2. Get SlopBro and run it
+## 2. Pegue o SlopBro e rode
 
-[throwaway96/slopbro](https://github.com/throwaway96/slopbro) (AGPL-3.0, no relation to this project). Needs Python
-3.8+, the TV's IP address, and the TV and your computer able to reach each other both ways on the network.
+[throwaway96/slopbro](https://github.com/throwaway96/slopbro) (AGPL-3.0, sem relação com este projeto). Precisa de
+Python 3.8+, do IP da TV, e da TV e do seu computador conseguirem se alcançar nos dois sentidos na rede.
 
 ```bash
 git clone https://github.com/throwaway96/slopbro.git
@@ -25,47 +26,51 @@ cd slopbro
 python3 slopbro.py <TV_IP>
 ```
 
-The TV shows a pairing prompt — accept it. The script then serves a small exploit page to the TV over your LAN; it
-downloads a fake system service package and runs it as root, which installs the webOS Homebrew Channel and sets up
-persistent root. Progress and errors print to the terminal; `--debug` adds more detail, written on the TV at
-`/tmp/autoroot.log`. The script itself doesn't need a reboot to finish, but it does finish by asking (as an
-on-screen TV alert) whether to reboot now — do that, since Homebrew Channel only fully "appears" after one.
+A TV mostra um pedido de pareamento — aceite. O script então serve uma pequena página de exploit para a TV pela sua
+rede local; ela baixa um pacote falso de serviço de sistema e o roda como root, o que instala o webOS Homebrew Channel
+e deixa o root persistente. O progresso e os erros aparecem no terminal; `--debug` adiciona mais detalhes, escritos
+na própria TV em `/tmp/autoroot.log`. O script em si não precisa de um reboot para terminar, mas ele termina
+perguntando (como um alerta na tela da TV) se quer reiniciar agora — aceite, já que o Homebrew Channel só "aparece"
+de verdade depois de um reboot.
 
-## 3. Before you reboot: uninstall LG's own Developer Mode app, if it's on the TV
+## 3. Antes de reiniciar: desinstale o app Developer Mode da própria LG, se estiver na TV
 
-This tripped us up the first time: with LG's **Developer Mode** app still installed, the root didn't take properly
-(or looked like it hadn't). SlopBro's own script checks for this and refuses to finish setting up persistence while
-it finds that app installed — remove it from the TV's app list before running SlopBro (or before the final reboot,
-if you already ran it with Developer Mode still on), then reboot.
+Isso nos pegou na primeira tentativa: com o app **Developer Mode** da LG ainda instalado, o root não pegava direito
+(ou parecia não ter pegado). O próprio script do SlopBro detecta isso e se recusa a terminar de deixar o root
+persistente enquanto encontra esse app instalado — remova-o da lista de apps da TV antes de rodar o SlopBro (ou antes
+do reboot final, se você já rodou com o Developer Mode ainda ligado), e então reinicie.
 
-## 4. After rebooting: confirm it worked
+## 4. Depois de reiniciar: confirme que funcionou
 
-**Homebrew Channel** should now be in the TV's app list. Open it once — this is also how you turn on Telnet or SSH
-(in its own Settings), which the other two docs' commands need. **Telnet has no password at all** (confirmed on this
-TV: it just drops you into a root shell) — turn it off again once you're done with it for the session. SSH is said
-by the Homebrew Channel community to default to the root password `alpine` unless you've added your own key to
-`/home/root/.ssh/authorized_keys`, but this project never actually used SSH on this TV (only Telnet), so take that
-one detail as secondhand, not something verified here. See `webosbrew.org`'s own docs for exactly where those
-toggles are in Homebrew Channel's settings screen, since the exact wording has changed between its versions.
+O **Homebrew Channel** deve aparecer agora na lista de apps da TV. Abra-o uma vez — é assim também que se liga o
+Telnet ou o SSH (nas configurações dele), que os comandos dos outros dois docs precisam. **O Telnet não tem senha
+nenhuma** (confirmado nesta TV: ele simplesmente te joga direto num shell root) — desligue-o de novo assim que
+terminar de usá-lo na sessão. O pessoal do Homebrew Channel diz que o SSH usa por padrão a senha de root `alpine`, a
+menos que você tenha adicionado sua própria chave em `/home/root/.ssh/authorized_keys`, mas este projeto nunca chegou
+a usar SSH nesta TV (só Telnet), então trate esse detalhe como de segunda mão, não como algo verificado aqui. Veja a
+própria documentação do `webosbrew.org` para saber exatamente onde ficam essas opções na tela de configurações do
+Homebrew Channel, já que o texto exato muda entre versões.
 
-## When you're done setting everything up: turn Telnet and SSH back off
+## Quando terminar de configurar tudo: desligue o Telnet e o SSH de novo
 
-Once `root-autostart.md` and `magic-mapper-buttons.md` (or anything else) are in place and working, go back into
-**Homebrew Channel → Settings** and switch **Telnet** and **SSH** both off. Neither needs to stay on: the autostart
-script and Magic Mapper are already saved on the TV's own disk and keep running (and restarting themselves) on
-their own — they don't call back out to anything, and don't need an open door into the TV to keep working. Telnet
-in particular has no password at all, so anyone else on the same Wi-Fi could get a root shell on the TV while it's
-left on. Turn one back on only for the next time you actually need to change something over it.
+Depois que o `root-autostart.md` e o `magic-mapper-buttons.md` (ou qualquer outra coisa) estiverem no lugar e
+funcionando, volte em **Homebrew Channel → Settings** e desligue tanto o **Telnet** quanto o **SSH**. Nenhum dos dois
+precisa ficar ligado: o script de autostart e o Magic Mapper já estão salvos no próprio disco da TV e continuam
+rodando (e se reiniciando sozinhos) por conta própria — eles não dependem de nada externo, nem precisam de uma porta
+aberta na TV para continuar funcionando. O Telnet, em especial, não tem senha nenhuma, então qualquer outra pessoa no
+mesmo Wi-Fi poderia conseguir um shell root na TV enquanto ele estiver ligado. Ligue de novo só na próxima vez que
+precisar mesmo mudar algo por ele.
 
-## Caveats
+## Ressalvas
 
-- Don't reinstall LG's own **Developer Mode** app once rooted — the two don't coexist cleanly (see step 3).
-- An LG software update, or a factory reset, removes the root — re-running SlopBro (after re-checking
-  cani.rootmy.tv, in case that update also patched the exploit) is how you'd get it back.
-- SlopBro's own README says it isn't expected to work on webOS 10/11 firmware released after it was patched
-  (around October 2026); for older webOS 3.5/4.x, its author points at a different tool,
-  [dejavuln-autoroot](https://github.com/throwaway96/dejavuln-autoroot), instead.
-- Rooting voids whatever LG considers "normal" support for the TV, and carries a small real risk of making the TV
-  unusable if something goes wrong mid-process (a power loss during the brief root-install step, say). It worked
-  cleanly on the TV this project's root-dependent docs were written against (an LG C1, webOS 6.5.3), but that's one
-  data point, not a guarantee for yours.
+- Não reinstale o app **Developer Mode** da própria LG depois de ter feito root — os dois não convivem bem juntos
+  (veja o passo 3).
+- Uma atualização de software da LG, ou um reset de fábrica, remove o root — rodar o SlopBro de novo (depois de
+  conferir de novo no cani.rootmy.tv, caso essa atualização também tenha corrigido o exploit) é como recuperá-lo.
+- O próprio README do SlopBro diz que não se espera que ele funcione em firmwares webOS 10/11 lançados depois que foi
+  corrigido (por volta de outubro de 2026); para webOS 3.5/4.x mais antigos, o autor aponta para outra ferramenta, o
+  [dejavuln-autoroot](https://github.com/throwaway96/dejavuln-autoroot).
+- Fazer root anula qualquer suporte "normal" que a LG considere válido para a TV, e carrega um risco real, ainda que
+  pequeno, de deixar a TV inutilizável se algo der errado no meio do processo (uma queda de energia durante o breve
+  passo de instalação do root, por exemplo). Funcionou direitinho na TV contra a qual os docs deste projeto que
+  dependem de root foram escritos (uma LG C1, webOS 6.5.3), mas isso é um único caso, não uma garantia para a sua.
